@@ -19,7 +19,7 @@ impl Complex {
         (0..exp).fold(Complex::new(1.0, 0.0), |acc, _| acc * self)
     }
 
-    pub const MAX_ITER: u16 = 100;
+    pub const MAX_ITER: u16 = 1000;
 
     // Returns `None` if stable, otherwise `Some(iter)` if it diverges after `iter` iterations.
     fn stability(self) -> Option<u16> {
@@ -91,17 +91,17 @@ fn hue_to_rgb(rad: f64) -> image::Rgb<u8> {
 }
 
 fn main() {
-    let img_height = 10000;
-    let img_width = 10000;
+    let img_height = 1000;
+    let img_width = 1000;
 
     let viewport_height = 4.0;
     let viewport_width = 4.0;
 
-    let zoom = 100.0;
+    let zoom = 200.0;
 
     let portion_size = 1000;
 
-    let top_left = (-0.78, -0.1);
+    let top_left = (-0.76, -0.05);
 
     let mut image = ImageBuffer::new(img_width, img_height);
 
@@ -162,7 +162,7 @@ fn main() {
     let mut count = 0;
 
     while let Ok((start_horizontal, start_vertical, part)) =
-        rx.recv_timeout(std::time::Duration::from_secs(1))
+        rx.recv_timeout(std::time::Duration::from_secs(5))
     {
         count += 1;
         println!(

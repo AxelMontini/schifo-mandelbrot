@@ -1,5 +1,5 @@
+use std::fmt;
 use std::ops::{Add, Mul};
-use std::{fmt, sync::Mutex};
 
 use image::{GenericImage, ImageBuffer};
 

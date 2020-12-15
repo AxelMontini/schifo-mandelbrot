@@ -91,13 +91,17 @@ fn hue_to_rgb(rad: f64) -> image::Rgb<u8> {
 }
 
 fn main() {
-    let img_height = 50000;
-    let img_width = 50000;
+    let img_height = 10000;
+    let img_width = 10000;
 
     let viewport_height = 4.0;
     let viewport_width = 4.0;
 
-    let portion_size = 1024;
+    let zoom = 100.0;
+
+    let portion_size = 1000;
+
+    let top_left = (-0.78, -0.1);
 
     let mut image = ImageBuffer::new(img_width, img_height);
 
@@ -127,10 +131,10 @@ fn main() {
                     |x, y| {
                         let true_x = x + start_horizontal;
                         let true_y = y + start_vertical;
-                        let re = (true_x as f64 / img_width as f64) * viewport_width
-                            - viewport_width / 2.0;
-                        let im = (true_y as f64 / img_height as f64) * viewport_height
-                            - viewport_height / 2.0;
+                        let re =
+                            top_left.0 + (true_x as f64 / img_width as f64) * viewport_width / zoom;
+                        let im = top_left.1
+                            + (true_y as f64 / img_height as f64) * viewport_height / zoom;
 
                         let num = Complex::new(re, im);
                         let stability = num.stability();
@@ -177,7 +181,7 @@ fn main() {
 
     let encoder = image::png::PngEncoder::new_with_quality(
         file,
-        image::codecs::png::CompressionType::Fast,
+        image::codecs::png::CompressionType::Best,
         image::codecs::png::FilterType::Sub,
     );
 

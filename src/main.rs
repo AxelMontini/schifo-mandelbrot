@@ -19,7 +19,7 @@ impl Complex {
         (0..exp).fold(Complex::new(1.0, 0.0), |acc, _| acc * self)
     }
 
-    pub const MAX_ITER: u16 = 1000;
+    pub const MAX_ITER: u16 = 50_000;
 
     // Returns `None` if stable, otherwise `Some(iter)` if it diverges after `iter` iterations.
     fn stability(self) -> Option<u16> {
@@ -91,21 +91,26 @@ fn hue_to_rgb(rad: f64) -> image::Rgb<u8> {
 }
 
 fn main() {
-    let img_height = 1000;
-    let img_width = 1000;
+    let img_height = 5_000;
+    let img_width = 5_000;
 
     let viewport_height = 4.0;
     let viewport_width = 4.0;
 
-    let zoom = 200.0;
+    let zoom = 10_000.0;
 
-    let portion_size = 1000;
+    let portion_size = 512;
 
-    let top_left = (-0.76, -0.05);
+    let center = (0.3, 0.026);
+    let top_left = (
+        center.0 - viewport_width / (zoom * 2.0),
+        center.1 - viewport_height / (zoom * 2.0),
+    );
 
     let mut image = ImageBuffer::new(img_width, img_height);
 
     let pool = rayon::ThreadPoolBuilder::new()
+        .thread_name(|i| format!("Mandelbrot Computer {}", i))
         .num_threads(24 - 1)
         .build()
         .expect("build thread pool");
@@ -161,9 +166,7 @@ fn main() {
     let total = (img_height / portion_size + 1) * (img_width / portion_size + 1);
     let mut count = 0;
 
-    while let Ok((start_horizontal, start_vertical, part)) =
-        rx.recv_timeout(std::time::Duration::from_secs(5))
-    {
+    while let Ok((start_horizontal, start_vertical, part)) = rx.recv() {
         count += 1;
         println!(
             "Concatenating ({}, {}) ({}/{})",
@@ -171,7 +174,12 @@ fn main() {
         );
         image
             .copy_from(&part, start_horizontal, start_vertical)
-            .expect("copy part in image")
+            .expect("copy part in image");
+
+        // Force break if done
+        if count == total {
+            break;
+        }
     }
 
     println!("Received all, saving...");
